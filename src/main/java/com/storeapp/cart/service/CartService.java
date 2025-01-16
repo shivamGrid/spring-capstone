@@ -1,9 +1,13 @@
 package com.storeapp.cart.service;
 
 import com.storeapp.cart.dto.*;
+import com.storeapp.cart.exception.BadRequestException;
+import com.storeapp.cart.exception.InsufficientStockException;
+import com.storeapp.cart.exception.ResourceNotFoundException;
 import com.storeapp.cart.model.*;
 import com.storeapp.cart.repository.CartRepository;
 import com.storeapp.cart.repository.ProductRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -12,6 +16,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
+@Transactional
 public class CartService {
     @Autowired
     private CartRepository cartRepository;
@@ -19,12 +24,13 @@ public class CartService {
     @Autowired
     private ProductRepository productRepository;
 
+
     public void addToCart(Long userId, CartItemRequest request) {
         Product product = productRepository.findById(request.getProductId())
-                .orElseThrow(() -> new IllegalArgumentException("Product not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
 
         if (request.getQuantity() <= 0) {
-            throw new IllegalArgumentException("Quantity must be greater than zero");
+            throw new BadRequestException("Quantity must be greater than zero");
         }
 
         validateStockAvailability(product, request.getQuantity());
@@ -101,7 +107,7 @@ public class CartService {
 
     private void validateStockAvailability(Product product, int requestedQuantity) {
         if (product.getAvailable() < requestedQuantity) {
-            throw new IllegalArgumentException("Insufficient stock available");
+            throw new InsufficientStockException("Insufficient stock available");
         }
     }
 }

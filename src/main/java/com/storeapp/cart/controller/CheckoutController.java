@@ -6,6 +6,9 @@ import com.storeapp.cart.repository.ProductRepository;
 import com.storeapp.cart.service.CartService;
 import com.storeapp.cart.service.OrderService;
 import com.storeapp.cart.service.UserService;
+import com.storeapp.cart.util.Constants;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +20,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/checkout")
+@Tag(name = "Checkout Controller", description = "APIs for managing the checkout process")
 public class CheckoutController {
     @Autowired
     private CartService cartService;
@@ -29,27 +33,28 @@ public class CheckoutController {
     @Autowired
     private UserService userService;
 
+    @Operation(summary = "Checkout", description = "Processes for placing order of a user")
     @PostMapping
     public ResponseEntity<String> checkout(HttpSession session) {
-        Long userId = (Long) session.getAttribute("userId");
+        Long userId = (Long) session.getAttribute(Constants.USER_ID);
         if (userId == null) {
-            return ResponseEntity.status(401).body("Unauthorized");
+            return ResponseEntity.status(401).body(Constants.UNAUTHORIZED);
         }
         List<CartItemResponse> cartItems = cartService.viewCart(userId);
         if (cartItems.isEmpty()) {
-            return ResponseEntity.status(400).body("Cart is empty");
+            return ResponseEntity.status(400).body(Constants.EMPTY_CART);
         }
 
         for (CartItemResponse item : cartItems) {
             Product product = productRepository.findById(item.getProductId())
-                    .orElseThrow(() -> new IllegalArgumentException("Product not found: " + item.getProductId()));
+                    .orElseThrow(() -> new IllegalArgumentException(Constants.PRODUCT_NOT_FOUND + item.getProductId()));
 
             if (product.getAvailable() < item.getQuantity()) {
-                return ResponseEntity.status(400).body("Insufficient stock for product: " + product.getTitle());
+                return ResponseEntity.status(400).body(Constants.INSUFFICIENT_STOCK + product.getTitle());
             }
 
             if (product.getPrice() != item.getPricePerUnit()) {
-                return ResponseEntity.status(400).body("Price mismatch for product: " + product.getTitle());
+                return ResponseEntity.status(400).body(Constants.PRICE_MISMATCH + product.getTitle());
             }
         }
 
@@ -62,7 +67,7 @@ public class CheckoutController {
         orderService.createOrder(userId, cartItems);
         cartService.clearCart(userId);
 
-        return ResponseEntity.ok("Order placed successfully");
+        return ResponseEntity.ok(Constants.ORDER_PLACED_SUCCESS);
     }
 
 }
