@@ -41,7 +41,7 @@ public class CartControllerTest {
     }
 
     @Test
-    void testAddToCart_Unauthorized() {
+    void testAddToCart_unauthorized() {
         when(session.getAttribute("userId")).thenReturn(null);
 
         ResponseEntity<String> response = cartController.addToCart(session, new CartItemRequest());
@@ -49,7 +49,7 @@ public class CartControllerTest {
     }
 
     @Test
-    void testAddToCart_Success() {
+    void testAddToCart_success() {
         Long userId = 1L;
         when(session.getAttribute("userId")).thenReturn(userId);
 
@@ -63,7 +63,7 @@ public class CartControllerTest {
     }
 
     @Test
-    void testViewCart_Unauthorized() {
+    void testViewCart_unauthorized() {
         when(session.getAttribute("userId")).thenReturn(null);
 
         ResponseEntity<List<CartItemResponse>> response = cartController.viewCart(session);
@@ -72,7 +72,7 @@ public class CartControllerTest {
         assertNull(response.getBody());
     }
     @Test
-    void testModifyCartItem_Success() {
+    void testModifyCartItem_success() {
         Long userId = 1L;
         when(session.getAttribute("userId")).thenReturn(userId);
 
@@ -85,7 +85,7 @@ public class CartControllerTest {
         verify(cartService, times(1)).modifyCartItem(eq(userId), any(CartItemModifyRequest.class));
     }
     @Test
-    void testRemoveCartItem_Unauthorized() {
+    void testRemoveCartItem_unauthorized() {
         when(session.getAttribute("userId")).thenReturn(null);
 
         ResponseEntity<String> response = cartController.removeCartItem(session, 1L);
@@ -95,7 +95,7 @@ public class CartControllerTest {
     }
 
     @Test
-    void testRemoveCartItem_Success() {
+    void testRemoveCartItem_success() {
         Long userId = 1L;
         when(session.getAttribute("userId")).thenReturn(userId);
 
@@ -108,7 +108,7 @@ public class CartControllerTest {
         verify(cartService, times(1)).removeCartItem(userId, 1L);
     }
     @Test
-    void testClearCart_Success() {
+    void testClearCart_success() {
         Long userId = 1L;
         when(session.getAttribute("userId")).thenReturn(userId);
 

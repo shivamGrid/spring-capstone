@@ -2,11 +2,9 @@ package com.storeapp.cart.service;
 
 import com.storeapp.cart.dto.*;
 import com.storeapp.cart.exception.BadRequestException;
-import com.storeapp.cart.exception.InsufficientStockException;
 import com.storeapp.cart.exception.ResourceNotFoundException;
 import com.storeapp.cart.model.*;
 import com.storeapp.cart.repository.CartRepository;
-import com.storeapp.cart.repository.ProductRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -22,18 +20,16 @@ public class CartService {
     private CartRepository cartRepository;
 
     @Autowired
-    private ProductRepository productRepository;
-
+    private ProductService productService;
 
     public void addToCart(Long userId, CartItemRequest request) {
-        Product product = productRepository.findById(request.getProductId())
-                .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+        Product product = productService.getProductById(request.getProductId());
 
         if (request.getQuantity() <= 0) {
             throw new BadRequestException("Quantity must be greater than zero");
         }
 
-        validateStockAvailability(product, request.getQuantity());
+        productService.validateStockAvailability(request.getProductId(), request.getQuantity());
 
         Cart cart = cartRepository.findByUserId(userId).orElse(new Cart(userId));
         Optional<CartItem> existingItem = cart.getItems().stream()
@@ -43,13 +39,11 @@ public class CartService {
         if (existingItem.isPresent()) {
             CartItem item = existingItem.get();
             int newQuantity = item.getQuantity() + request.getQuantity();
-            validateStockAvailability(product, newQuantity);
+            productService.validateStockAvailability(product.getId(), newQuantity);
             item.setQuantity(newQuantity);
-            System.out.println("Updated cart item: " + item.getProduct().getTitle() + " | Quantity: " + item.getQuantity());
         } else {
             CartItem newItem = new CartItem(cart, product, request.getQuantity());
             cart.getItems().add(newItem);
-            System.out.println("Added new cart item: " + product.getTitle() + " | Quantity: " + request.getQuantity());
         }
 
         cartRepository.save(cart);
@@ -57,7 +51,7 @@ public class CartService {
 
     public List<CartItemResponse> viewCart(Long userId) {
         Cart cart = cartRepository.findByUserId(userId)
-                .orElseThrow(() -> new IllegalArgumentException("Cart is empty"));
+                .orElseThrow(() -> new ResourceNotFoundException("Cart is empty"));
 
         return cart.getItems().stream()
                 .map(item -> new CartItemResponse(
@@ -72,26 +66,21 @@ public class CartService {
 
     public void modifyCartItem(Long userId, CartItemModifyRequest request) {
         Cart cart = cartRepository.findByUserId(userId)
-                .orElseThrow(() -> new IllegalArgumentException("Cart is empty"));
+                .orElseThrow(() -> new ResourceNotFoundException("Cart is empty"));
 
         CartItem item = cart.getItems().stream()
                 .filter(i -> i.getProduct().getId().equals(request.getProductId()))
                 .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("Item not found in cart"));
+                .orElseThrow(() -> new ResourceNotFoundException("Item not found in cart"));
 
-        Product product = productRepository.findById(request.getProductId())
-                .orElseThrow(() -> new IllegalArgumentException("Product not found"));
-
-        if (request.getQuantity() > product.getAvailable()) {
-            throw new IllegalArgumentException("Insufficient stock available");
-        }
+        productService.validateStockAvailability(request.getProductId(), request.getQuantity());
         item.setQuantity(request.getQuantity());
         cartRepository.save(cart);
     }
 
     public void removeCartItem(Long userId, Long productId) {
         Cart cart = cartRepository.findByUserId(userId)
-                .orElseThrow(() -> new IllegalArgumentException("Cart is empty"));
+                .orElseThrow(() -> new ResourceNotFoundException("Cart is empty"));
 
         cart.getItems().removeIf(item -> item.getProduct().getId().equals(productId));
         cartRepository.save(cart);
@@ -99,15 +88,9 @@ public class CartService {
 
     public void clearCart(Long userId) {
         Cart cart = cartRepository.findByUserId(userId)
-                .orElseThrow(() -> new IllegalArgumentException("Cart is empty"));
+                .orElseThrow(() -> new ResourceNotFoundException("Cart is empty"));
 
         cart.getItems().clear();
         cartRepository.save(cart);
-    }
-
-    private void validateStockAvailability(Product product, int requestedQuantity) {
-        if (product.getAvailable() < requestedQuantity) {
-            throw new InsufficientStockException("Insufficient stock available");
-        }
     }
 }
