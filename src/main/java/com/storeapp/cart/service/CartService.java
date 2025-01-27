@@ -5,6 +5,7 @@ import com.storeapp.cart.exception.BadRequestException;
 import com.storeapp.cart.exception.ResourceNotFoundException;
 import com.storeapp.cart.model.*;
 import com.storeapp.cart.repository.CartRepository;
+import com.storeapp.cart.util.Constants;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -26,7 +27,7 @@ public class CartService {
         Product product = productService.getProductById(request.getProductId());
 
         if (request.getQuantity() <= 0) {
-            throw new BadRequestException("Quantity must be greater than zero");
+            throw new BadRequestException(Constants.QUANTITY_LESS_THAN_ZERO);
         }
 
         productService.validateStockAvailability(request.getProductId(), request.getQuantity());
@@ -51,7 +52,7 @@ public class CartService {
 
     public List<CartItemResponse> viewCart(Long userId) {
         Cart cart = cartRepository.findByUserId(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("Cart is empty"));
+                .orElseThrow(() -> new ResourceNotFoundException(Constants.CART_NOT_FOUND));
 
         return cart.getItems().stream()
                 .map(item -> new CartItemResponse(
@@ -66,12 +67,12 @@ public class CartService {
 
     public void modifyCartItem(Long userId, CartItemModifyRequest request) {
         Cart cart = cartRepository.findByUserId(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("Cart is empty"));
+                .orElseThrow(() -> new ResourceNotFoundException(Constants.CART_NOT_FOUND));
 
         CartItem item = cart.getItems().stream()
                 .filter(i -> i.getProduct().getId().equals(request.getProductId()))
                 .findFirst()
-                .orElseThrow(() -> new ResourceNotFoundException("Item not found in cart"));
+                .orElseThrow(() -> new ResourceNotFoundException(Constants.ITEM_NOT_FOUND));
 
         productService.validateStockAvailability(request.getProductId(), request.getQuantity());
         item.setQuantity(request.getQuantity());
@@ -80,7 +81,7 @@ public class CartService {
 
     public void removeCartItem(Long userId, Long productId) {
         Cart cart = cartRepository.findByUserId(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("Cart is empty"));
+                .orElseThrow(() -> new ResourceNotFoundException(Constants.CART_NOT_FOUND));
 
         cart.getItems().removeIf(item -> item.getProduct().getId().equals(productId));
         cartRepository.save(cart);
@@ -88,7 +89,7 @@ public class CartService {
 
     public void clearCart(Long userId) {
         Cart cart = cartRepository.findByUserId(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("Cart is empty"));
+                .orElseThrow(() -> new ResourceNotFoundException(Constants.CART_NOT_FOUND));
 
         cart.getItems().clear();
         cartRepository.save(cart);

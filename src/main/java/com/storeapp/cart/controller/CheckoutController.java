@@ -42,7 +42,7 @@ public class CheckoutController {
         }
         List<CartItemResponse> cartItems = cartService.viewCart(userId);
         if (cartItems.isEmpty()) {
-            return ResponseEntity.status(400).body(Constants.EMPTY_CART);
+            return ResponseEntity.status(400).body(Constants.CART_NOT_FOUND);
         }
 
         for (CartItemResponse item : cartItems) {

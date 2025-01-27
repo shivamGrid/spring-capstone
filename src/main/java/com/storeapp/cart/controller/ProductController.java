@@ -22,11 +22,7 @@ public class ProductController {
     @Operation(summary = "Get all products", description = "Fetches a list of all available products")
     @GetMapping
     public ResponseEntity<List<ProductResponse>> getAllProducts() {
-        try {
             List<ProductResponse> products = productService.getAllProducts();
             return ResponseEntity.ok(products);
-        } catch (Exception e) {
-            return ResponseEntity.status(500).body(Collections.emptyList());
-        }
     }
 }

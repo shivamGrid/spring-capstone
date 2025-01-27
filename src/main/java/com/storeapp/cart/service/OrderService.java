@@ -28,7 +28,7 @@ public class OrderService {
     public void processCheckout(Long userId) {
         List<CartItemResponse> cartItems = cartService.viewCart(userId);
         if (cartItems.isEmpty()) {
-            throw new BadRequestException(Constants.EMPTY_CART);
+            throw new BadRequestException(Constants.CART_NOT_FOUND);
         }
 
         for (CartItemResponse item : cartItems) {
