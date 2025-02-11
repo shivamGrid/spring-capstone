@@ -14,12 +14,14 @@ import java.util.List;
 @RequestMapping("/api/products")
 @Tag(name = "Product Controller", description = "APIs for managing products")
 public class ProductController {
+
     @Autowired
     private ProductService productService;
 
     @Operation(summary = "Get all products", description = "Fetches a list of all available products")
     @GetMapping
     public ResponseEntity<List<ProductResponse>> getAllProducts() {
-        return ResponseEntity.ok(productService.getAllProducts());
+        List<ProductResponse> products = productService.getAllProducts();
+        return ResponseEntity.ok(products);
     }
 }

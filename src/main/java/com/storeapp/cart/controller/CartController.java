@@ -2,6 +2,7 @@ package com.storeapp.cart.controller;
 
 import com.storeapp.cart.dto.*;
 import com.storeapp.cart.service.CartService;
+import com.storeapp.cart.service.SessionService;
 import com.storeapp.cart.service.UserService;
 import com.storeapp.cart.util.Constants;
 import io.swagger.v3.oas.annotations.Operation;
@@ -18,14 +19,14 @@ import java.util.List;
 @Tag(name = "Cart Controller", description = "APIs for managing the shopping cart")
 public class CartController {
     @Autowired
-    UserService userService;
-    @Autowired
     private CartService cartService;
+    @Autowired
+    private SessionService sessionService;
 
     @Operation(summary = "Add item to cart", description = "Adds an item to the user's cart")
-    @PostMapping("/add")
+    @PostMapping
     public ResponseEntity<String> addToCart(HttpSession session, @RequestBody CartItemRequest request) {
-        Long userId = (Long) session.getAttribute(Constants.USER_ID);
+        Long userId = sessionService.getUserIdFromSession(session);
         if (userId == null) {
             return ResponseEntity.status(401).body(Constants.UNAUTHORIZED);
         }
@@ -36,7 +37,7 @@ public class CartController {
     @Operation(summary = "View cart", description = "Returns the list of items in the user's cart")
     @GetMapping
     public ResponseEntity<List<CartItemResponse>> viewCart(HttpSession session) {
-        Long userId = (Long) session.getAttribute(Constants.USER_ID);
+        Long userId = sessionService.getUserIdFromSession(session);
         if (userId == null) {
             return ResponseEntity.status(401).body(null);
         }
@@ -44,9 +45,9 @@ public class CartController {
     }
 
     @Operation(summary = "Modify cart item", description = "Modifies the quantity of an item in the cart")
-    @PutMapping("/modify")
+    @PutMapping
     public ResponseEntity<String> modifyCartItem(HttpSession session, @RequestBody CartItemModifyRequest request) {
-        Long userId = (Long) session.getAttribute(Constants.USER_ID);
+        Long userId = sessionService.getUserIdFromSession(session);
         if (userId == null) {
             return ResponseEntity.status(401).body(Constants.UNAUTHORIZED);
         }
@@ -55,9 +56,9 @@ public class CartController {
     }
 
     @Operation(summary = "Remove item from cart", description = "Removes an item from the user's cart")
-    @DeleteMapping("/remove")
+    @DeleteMapping
     public ResponseEntity<String> removeCartItem(HttpSession session, @RequestParam Long itemId) {
-        Long userId = (Long) session.getAttribute(Constants.USER_ID);
+        Long userId = sessionService.getUserIdFromSession(session);
         if (userId == null) {
             return ResponseEntity.status(401).body(Constants.UNAUTHORIZED);
         }
@@ -68,7 +69,7 @@ public class CartController {
     @Operation(summary = "Clear cart", description = "Clears all items from the user's cart")
     @DeleteMapping("/clear")
     public ResponseEntity<String> clearCart(HttpSession session) {
-        Long userId = (Long) session.getAttribute(Constants.USER_ID);
+        Long userId = sessionService.getUserIdFromSession(session);
         if (userId == null) {
             return ResponseEntity.status(401).body(Constants.UNAUTHORIZED);
         }

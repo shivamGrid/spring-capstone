@@ -24,24 +24,16 @@ public class UserController {
 
     @PostMapping("/register")
     public ResponseEntity<String> registerUser(@RequestBody UserRequest userRequest) {
-        try {
-            userService.registerUser(userRequest);
-            return ResponseEntity.status(201).body(Constants.USER_REGISTERED);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(409).body(e.getMessage());
-        }
+        userService.registerUser(userRequest);
+        return ResponseEntity.status(201).body(Constants.USER_REGISTERED);
     }
-
 
     @PostMapping("/login")
     public ResponseEntity<Map<String, String>> loginUser(@RequestBody UserRequest userRequest, HttpSession session) {
-        try {
-            User user = userService.loginUser(userRequest);
-            String sessionId = UUID.randomUUID().toString();
-            session.setAttribute(Constants.USER_ID, user.getId());
-            return ResponseEntity.ok(Map.of(Constants.SESSION_ID, sessionId));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(400).body(Map.of(Constants.ERROR, e.getMessage()));
-        }
+        User user = userService.loginUser(userRequest);
+        String sessionId = UUID.randomUUID().toString();
+        session.setAttribute(Constants.USER_ID, user.getId());
+        return ResponseEntity.ok(Map.of(Constants.SESSION_ID, sessionId));
     }
 }
+

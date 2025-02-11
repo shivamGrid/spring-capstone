@@ -1,6 +1,7 @@
 package com.storeapp.cart.model;
 
 import jakarta.persistence.*;
+import lombok.Builder;
 
 @Entity
 @Table(name = "order_item")

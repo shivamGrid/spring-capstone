@@ -8,7 +8,9 @@ public class Constants {
     public static final String CART_UPDATED = "Cart item updated";
     public static final String CART_ITEM_REMOVED = "Item removed from cart";
     public static final String CART_CLEARED = "Cart cleared successfully";
-    public static final String EMPTY_CART = "Cart is empty";
+    public static final String CART_NOT_FOUND = "Cart is not found";
+    public static final String QUANTITY_LESS_THAN_ZERO = "Quantity must be greater than zero";
+    public static final String ITEM_NOT_FOUND = "Item not found in cart";
     public static final String PRODUCT_NOT_FOUND = "Product not found: ";
     public static final String INSUFFICIENT_STOCK = "Insufficient stock for product: ";
     public static final String PRICE_MISMATCH = "Price mismatch for product: ";
